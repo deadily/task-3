@@ -1,8 +1,13 @@
 <template>
   <div class="column">
     <div class="column-header">
-      <span>{{ title }}</span>
-      <span>{{ cards.length }}</span>
+      <div class="column-title">
+        <span>{{ title }}</span>
+      </div>
+      <div class="column-counts">
+        <span class="total-count">{{ cards.length }}</span>
+        <span v-if="overdueCount > 0" class="overdue-count">{{ overdueCount }} просроч.</span>
+      </div>
     </div>
     <div class="card-list">
       <Card
@@ -16,10 +21,11 @@
       />
     </div>
     <button v-if="canAdd" @click="$emit('add-card', null)" class="add-card-btn">
-      + Добавить Задачу
+      + Добавить
     </button>
   </div>
 </template>
+
 
 
 <script>
@@ -27,9 +33,15 @@ import Card from './Card.vue';
 export default {
   components: { Card },
   props: {
-    title: String, cards: Array, columnId: String,
-    canAdd: Boolean, canEdit: Boolean, canDelete: Boolean,
-    nextColumn: String, prevColumn: String,
+    title: String, 
+    cards: Array, 
+    columnId: String,
+    overdueCount: Number,
+    canAdd: Boolean, 
+    canEdit: Boolean, 
+    canDelete: Boolean,
+    nextColumn: String, 
+    prevColumn: String,
   },
   emits: ['add-card', 'move-card', 'edit-card', 'delete-card', 'return-card'],
 };

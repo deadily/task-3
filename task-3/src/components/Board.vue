@@ -34,6 +34,7 @@
     <Column
       title="Готовые"
       :cards="columns.done"
+      :overdue-count="overdueDoneCount"
       column-id="done"
       :can-add="false" :can-edit="false" :can-delete="false"
     />
@@ -72,7 +73,7 @@
 <script>
 import Column from './Column.vue'
 import CardForm from './CardForm.vue'
-import { reactive, onMounted, watch, ref } from 'vue'
+import { reactive, onMounted, watch, ref, computed } from 'vue'
 
 export default {
   name: 'Board',
@@ -85,6 +86,38 @@ export default {
     const returningCard = ref(null)
     const returnReason = ref('')
     const isEditing = ref(false)
+
+
+    const isCardOverdue = (card) => {
+      if (!card.deadline) return false
+      if (card.status === 'done') return card.isOverdue
+      
+      let deadline
+      if (card.deadline.includes('-')) {
+        const [year, month, day] = card.deadline.split('-')
+        deadline = new Date(year, month - 1, day)
+      } else {
+        deadline = new Date(card.deadline)
+      }
+      deadline.setHours(23, 59, 59, 999)
+      return new Date() > deadline
+    }
+
+    const overduePlannedCount = computed(() => 
+      columns.planned.filter(card => isCardOverdue(card)).length
+    )
+    
+    const overdueInProgressCount = computed(() => 
+      columns.inProgress.filter(card => isCardOverdue(card)).length
+    )
+    
+    const overdueTestingCount = computed(() => 
+      columns.testing.filter(card => isCardOverdue(card)).length
+    )
+    
+    const overdueDoneCount = computed(() => 
+      columns.done.filter(card => card.isOverdue).length
+    )
 
     const loadState = () => {
       const saved = localStorage.getItem('kanbanState')
@@ -211,9 +244,24 @@ export default {
     watch(columns, saveState, { deep: true })
 
     return {
-      columns, showEditModal, showReturnModal, editingCard, returnReason, isEditing,
-      openEditModal, openReturnModal, closeModals, saveCard, handleDeleteCard,
-      handleMoveCard, handleAddCard, confirmReturn
+      columns, 
+      showEditModal, 
+      showReturnModal, 
+      editingCard, 
+      returnReason, 
+      isEditing,
+      overduePlannedCount,
+      overdueInProgressCount,
+      overdueTestingCount,
+      overdueDoneCount,
+      openEditModal, 
+      openReturnModal, 
+      closeModals, 
+      saveCard, 
+      handleDeleteCard,
+      handleMoveCard, 
+      handleAddCard, 
+      confirmReturn
     }
   }
 }
